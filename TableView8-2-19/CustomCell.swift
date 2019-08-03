@@ -10,6 +10,9 @@ import UIKit
 
 class CustomCell: UITableViewCell {
     
+    var delegate: ProductCellDelegate?
+    var btnTag:Int = 0
+    
     var cellData: CellData! {
         didSet {
             titleText.text = cellData.title
@@ -22,6 +25,13 @@ class CustomCell: UITableViewCell {
             //cellData.data.forEach{(snip) in bodyText.text += snip}
             featuredImage.image = cellData.image
             contentFoot.text = cellData.footer
+            myButton.tag = btnTag
+            if cellData.taps == 0 {
+                myButton.setTitle("+", for: .normal)
+            }else{
+                myButton.setTitle("\(cellData.taps)", for: .normal)
+            }
+            //btnCount = cellData.count != nil ? cellData.count! : 0
         }
     }
     
@@ -31,6 +41,8 @@ class CustomCell: UITableViewCell {
        
     super.init(style: style, reuseIdentifier: reuseIdentifier)
         
+        
+        //contentView.isUserInteractionEnabled = false
     contentView.backgroundColor = .white
         backgroundColor = .clear
         
@@ -39,6 +51,7 @@ class CustomCell: UITableViewCell {
         contentView.addSubview(bodyText)
         contentView.addSubview(contentFoot)
         contentView.addSubview(myButton)
+
 //        featuredImage.heightAnchor.constraint(equalToConstant: 105).isActive = true
 //
 //        featuredImage.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8).isActive = true
@@ -57,7 +70,7 @@ class CustomCell: UITableViewCell {
         
         contentFoot.anchor(top: featuredImage.bottomAnchor, left: contentView.leadingAnchor, bottom: nil, right: contentView.trailingAnchor, paddingTop: 0, paddingLeft: 0, paddingBottom: 0, paddingRight: 0, width: 0, height: 0, enableInsets: false)
 
-       
+         myButton.addTarget(self, action: #selector(btnPressed), for: .touchUpInside)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -101,9 +114,37 @@ class CustomCell: UITableViewCell {
         let but = UIButton()
        // but.titleLabel?.text = "+"
        // but.titleLabel?.backgroundColor = .clear
-        but.setTitle("+", for: .normal)
+      
         but.backgroundColor = .gray
+    
+        but.isEnabled = true
+      
         //but.titleLabel?.textColor = .black
        return but
     }()
+    
+    @objc fileprivate func btnPressed(button:UIButton){
+      
+        print("button tag: \(button.tag)")
+        
+        cellData.taps += 1
+        if cellData.taps != 0 {
+        myButton.setTitle("\(cellData.taps)", for: .normal)
+        }
+       
+        //var myparent = UIApplication.shared.keyWindow?.rootViewController! as! tableViewController
+        delegate?.increaseCount(cellIndex: button.tag, number: cellData.taps)
+        let alert = UIAlertController(title: "Pressed this button \(cellData.taps) times!", message: "It's working", preferredStyle: UIAlertController.Style.alert)
+        let noAction = UIAlertAction(title: "Do Something", style: .default, handler:
+        {(UIAlertAction) in
+            self.toConsole()
+        })
+        alert.addAction(noAction)
+        //present(alert,animated: true, completion: nil)
+    UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)
+    }
+    
+    func toConsole(){
+        print("alert was handled")
+    }
 }
